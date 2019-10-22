@@ -164,6 +164,76 @@ public class BrightcovePlayerView extends RelativeLayout implements LifecycleEve
                 reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(BrightcovePlayerView.this.getId(), BrightcovePlayerManager.EVENT_UPDATE_BUFFER_PROGRESS, event);
             }
         });
+        eventEmitter.on(EventType.ERROR, new EventListener() {
+            @Override
+            public void processEvent(Event e) {
+                WritableMap error = mapToRnWritableMap(e.properties);
+                // The DID_FAIL_TO_PLAY_AD event will have already been called. No need to send
+                // out an error twice. We also want to separate brightcove errors from ima errors,
+                // since if the pre-roll fails, we want to ignore the problem and just play the
+                // video.
+                if (error.hasKey("adId")) {
+                    return;
+                }
+                emitEvent(BrightcovePlayerManager.EVENT_ERROR, error);
+            }
+        });
+        eventEmitter.on(EventType.BUFFERING_STARTED, new EventListener() {
+            @Override
+            public void processEvent(Event e) {
+                WritableMap event = Arguments.createMap();
+                ReactContext reactContext = (ReactContext) BrightcovePlayerView.this.getContext();
+                reactContext
+                        .getJSModule(RCTEventEmitter.class)
+                        .receiveEvent(BrightcovePlayerView.this.getId(), BrightcovePlayerManager.EVENT_BUFFERING_STARTED, event);
+            }
+        });
+        eventEmitter.on(EventType.BUFFERING_COMPLETED, new EventListener() {
+            @Override
+            public void processEvent(Event e) {
+                WritableMap event = Arguments.createMap();
+                ReactContext reactContext = (ReactContext) BrightcovePlayerView.this.getContext();
+                reactContext
+                        .getJSModule(RCTEventEmitter.class)
+                        .receiveEvent(BrightcovePlayerView.this.getId(), BrightcovePlayerManager.EVENT_BUFFERING_COMPLETED, event);
+            }
+        });
+
+        // Because nothing is easy, we don't add the `playerVideoView` yet.
+        // We wait until after the layout request (see `requestLayout` below).
+    }
+
+    private void emitEvent(String type, WritableMap data) {
+        if (data == null) {
+            data = Arguments.createMap();
+        }
+        ReactContext reactContext = (ReactContext) BrightcovePlayerView.this.getContext();
+        reactContext
+                .getJSModule(RCTEventEmitter.class)
+                .receiveEvent(BrightcovePlayerView.this.getId(), type, data);
+    }
+
+    // Warning, I've only tested this function for strings.
+    // Also, doesn't work with recursive maps or arrays
+    private WritableMap mapToRnWritableMap(Map<String, Object> map) {
+        WritableMap writableMap = Arguments.createMap();
+        for (String key : map.keySet()) {
+            Object val = map.get(key);
+
+            if (val instanceof String) {
+                writableMap.putString(key, (String)val);
+            } else if (val instanceof Integer) {
+                writableMap.putInt(key, (Integer)val);
+            } else if (val instanceof Boolean) {
+                writableMap.putBoolean(key, (Boolean)val);
+            } else if (val instanceof Double) {
+                writableMap.putDouble(key, (Double)val);
+            } else if (val == null) {
+                writableMap.putNull(key);
+            }
+        }
+
+        return writableMap;
     }
 
     public void setPolicyKey(String policyKey) {
@@ -234,6 +304,16 @@ public class BrightcovePlayerView extends RelativeLayout implements LifecycleEve
         if (playbackRate == 0) return;
         this.playbackRate = playbackRate;
         this.updatePlaybackRate();
+    }
+
+    public void play() {
+        if (this.playing) return;
+        this.playerVideoView.start();
+    }
+
+    public void pause() {
+        if (!this.playing) return;
+        this.playerVideoView.pause();
     }
 
     public void seekTo(int time) {

@@ -110,6 +110,32 @@ BrightcovePlayer.prototype.seekTo = Platform.select({
   }
 });
 
+BrightcovePlayer.prototype.play = Platform.select({
+  ios: function() {
+    NativeModules.BrightcovePlayerManager.play(ReactNative.findNodeHandle(this));
+  },
+  android: function() {
+    UIManager.dispatchViewManagerCommand(
+      ReactNative.findNodeHandle(this._root),
+      UIManager.BrightcovePlayer.Commands.play,
+      [],
+    );
+  },
+});
+
+BrightcovePlayer.prototype.pause = Platform.select({
+  ios: function() {
+    NativeModules.BrightcovePlayerManager.pause(ReactNative.findNodeHandle(this));
+  },
+  android: function() {
+    UIManager.dispatchViewManagerCommand(
+      ReactNative.findNodeHandle(this._root),
+      UIManager.BrightcovePlayer.Commands.pause,
+      [],
+    );
+  },
+});
+
 BrightcovePlayer.propTypes = {
   ...(ViewPropTypes || View.propTypes),
   policyKey: PropTypes.string,

@@ -17,6 +17,8 @@ import java.util.Map;
 public class BrightcovePlayerManager extends SimpleViewManager<BrightcovePlayerView> {
     public static final String REACT_CLASS = "BrightcovePlayer";
     public static final int COMMAND_SEEK_TO = 1;
+    public static final int COMMAND_PLAY = 2;
+    public static final int COMMAND_PAUSE = 3;
     public static final String EVENT_READY = "ready";
     public static final String EVENT_PLAY = "play";
     public static final String EVENT_PAUSE = "pause";
@@ -25,6 +27,12 @@ public class BrightcovePlayerManager extends SimpleViewManager<BrightcovePlayerV
     public static final String EVENT_TOGGLE_ANDROID_FULLSCREEN = "toggle_android_fullscreen";
     public static final String EVENT_CHANGE_DURATION = "change_duration";
     public static final String EVENT_UPDATE_BUFFER_PROGRESS = "update_buffer_progress";
+    public static final String EVENT_ERROR = "error";
+    public static final String EVENT_BUFFERING_STARTED = "buffering_started";
+    public static final String EVENT_BUFFERING_COMPLETED = "buffering_completed";
+    public static final String EVENT_AD_STARTED = "ad_started";
+    public static final String EVENT_AD_ERROR = "ad_error";
+    public static final String EVENT_AD_COMPLETED = "ad_completed";
 
     private ReactApplicationContext applicationContext;
 
@@ -107,8 +115,9 @@ public class BrightcovePlayerManager extends SimpleViewManager<BrightcovePlayerV
     @Override
     public Map<String, Integer> getCommandsMap() {
         return MapBuilder.of(
-                "seekTo",
-                COMMAND_SEEK_TO
+                "seekTo", COMMAND_SEEK_TO,
+                "play", COMMAND_PLAY,
+                "pause", COMMAND_PAUSE
         );
     }
 
@@ -119,6 +128,14 @@ public class BrightcovePlayerManager extends SimpleViewManager<BrightcovePlayerV
         switch (commandType) {
             case COMMAND_SEEK_TO: {
                 view.seekTo((int)(args.getDouble(0) * 1000));
+                return;
+            }
+            case COMMAND_PLAY: {
+                view.play();
+                return;
+            }
+            case COMMAND_PAUSE: {
+                view.pause();
                 return;
             }
         }
@@ -135,6 +152,12 @@ public class BrightcovePlayerManager extends SimpleViewManager<BrightcovePlayerV
         map.put(EVENT_CHANGE_DURATION, (Object) MapBuilder.of("registrationName", "onChangeDuration"));
         map.put(EVENT_UPDATE_BUFFER_PROGRESS, (Object) MapBuilder.of("registrationName", "onUpdateBufferProgress"));
         map.put(EVENT_TOGGLE_ANDROID_FULLSCREEN, (Object) MapBuilder.of("registrationName", "onToggleAndroidFullscreen"));
+        map.put(EVENT_ERROR, (Object) MapBuilder.of("registrationName", "onError"));
+        map.put(EVENT_BUFFERING_STARTED, (Object) MapBuilder.of("registrationName", "onBufferingStarted"));
+        map.put(EVENT_BUFFERING_COMPLETED, (Object) MapBuilder.of("registrationName", "onBufferingCompleted"));
+        map.put(EVENT_AD_STARTED, (Object) MapBuilder.of("registrationName", "onAdStarted"));
+        map.put(EVENT_AD_COMPLETED, (Object) MapBuilder.of("registrationName", "onAdCompleted"));
+        map.put(EVENT_AD_ERROR, (Object) MapBuilder.of("registrationName", "onAdError"));
         return map;
     }
 }

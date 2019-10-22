@@ -48,7 +48,6 @@ public class BrightcovePlayerPosterView extends RelativeLayout implements Lifecy
 
     public void setAccountId(String accountId) {
         this.accountId = accountId;
-        this.loadPoster();
     }
 
     public void setVideoId(String videoId) {
@@ -85,16 +84,25 @@ public class BrightcovePlayerPosterView extends RelativeLayout implements Lifecy
             loadImage(video);
             return;
         }
-        VideoListener listener = new VideoListener() {
-            @Override
-            public void onVideo(Video video) {
-                loadImage(video);
-            }
-        };
-        this.catalog = new Catalog(DefaultEventEmitter.sharedEventEmitter, this.accountId, this.policyKey);
+
+        if (this.catalog == null) {
+            this.catalog = new Catalog(DefaultEventEmitter.sharedEventEmitter, this.accountId, this.policyKey);
+        }
         if (this.videoId != null) {
+            VideoListener listener = new VideoListener() {
+                @Override
+                public void onVideo(Video video) {
+                    loadImage(video);
+                }
+            };
             this.catalog.findVideoByID(this.videoId, listener);
         } else if (this.referenceId != null) {
+            VideoListener listener = new VideoListener() {
+                @Override
+                public void onVideo(Video video) {
+                    loadImage(video);
+                }
+            };
             this.catalog.findVideoByReferenceID(this.referenceId, listener);
         }
     }
